@@ -42,7 +42,7 @@ class FComex(models.Model):
     vl_quantidade = models.IntegerField()
     vl_peso_kg = models.IntegerField()
     vl_fob = models.IntegerField()
-    movimentacao = models.CharField(max_length=2)
+    movimentacao = models.CharField(max_length=100)
 
     class Meta:
         managed = True
