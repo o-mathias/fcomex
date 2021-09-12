@@ -2,8 +2,8 @@ from django.db import models
 
 
 class SH2(models.Model):
-    co_sh2 = models.IntegerField()
-    no_sh2_por = models.TextField()
+    id_sh2 = models.PositiveIntegerField(primary_key=True)
+    no_sh2_por = models.TextField(unique=True)
 
     class Meta:
         managed = True
@@ -11,8 +11,8 @@ class SH2(models.Model):
 
 
 class NCM(models.Model):
-    co_ncm = models.IntegerField()
-    no_ncm_por = models.TextField()
+    id_ncm = models.PositiveIntegerField(primary_key=True)
+    no_ncm_por = models.TextField(unique=True)
     sh2 = models.ForeignKey(SH2, on_delete=models.PROTECT)
     
     class Meta:
@@ -21,8 +21,8 @@ class NCM(models.Model):
 
 
 class VIA(models.Model):
-    co_via = models.IntegerField()
-    no_via = models.CharField(max_length=300)
+    id_via = models.PositiveIntegerField(primary_key=True)
+    no_via = models.CharField(max_length=300, unique=True)
 
     class Meta:
         managed = True
@@ -30,6 +30,7 @@ class VIA(models.Model):
 
 
 class FComex(models.Model):
+    id_fcomex = models.PositiveIntegerField(primary_key=True)
     ano = models.IntegerField()
     mes = models.IntegerField()
     ncm = models.ForeignKey(NCM, on_delete=models.PROTECT)
@@ -46,5 +47,4 @@ class FComex(models.Model):
     class Meta:
         managed = True
         db_table = 'fcomex'
-
 
