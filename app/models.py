@@ -30,7 +30,7 @@ class VIA(models.Model):
 
 
 class FComex(models.Model):
-    id_fcomex = models.PositiveIntegerField(primary_key=True)
+    id_fcomex = models.AutoField(primary_key=True)
     ano = models.IntegerField()
     mes = models.IntegerField()
     ncm = models.ForeignKey(NCM, on_delete=models.PROTECT)
