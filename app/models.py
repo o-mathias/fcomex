@@ -12,7 +12,7 @@ class SH2(models.Model):
 
 class NCM(models.Model):
     id_ncm = models.PositiveIntegerField(primary_key=True)
-    no_ncm_por = models.CharField(max_length=300, unique=True)
+    no_ncm_por = models.CharField(max_length=300, unique=False)
     sh2 = models.ForeignKey(SH2, on_delete=models.PROTECT)
     
     class Meta:
