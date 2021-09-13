@@ -39,9 +39,9 @@ class FComex(models.Model):
     sg_uf = models.CharField(max_length=2)
     via = models.ForeignKey(VIA, on_delete=models.PROTECT)
     cod_urf = models.IntegerField()
-    vl_quantidade = models.IntegerField()
-    vl_peso_kg = models.IntegerField()
-    vl_fob = models.IntegerField()
+    vl_quantidade = models.BigIntegerField()
+    vl_peso_kg = models.BigIntegerField()
+    vl_fob = models.BigIntegerField()
     movimentacao = models.CharField(max_length=100)
 
     class Meta:
