@@ -168,10 +168,12 @@ STATICFILES_FINDERS = [
     'django_plotly_dash.finders.DashAppDirectoryFinder',
 ]
 
+CACHE_ROOT = os.path.join(BASE_DIR, 'django_cache')
+
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        'LOCATION': './django_cache',
+        'LOCATION': CACHE_ROOT,
         'TIMEOUT': 60,
         'OPTIONS': {
             'MAX_ENTRIES': 1000
