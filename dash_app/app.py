@@ -104,26 +104,27 @@ def query_cache(ano, mov, prd):
     df_comex = cache.get(p_comex)
 
     if type(df_comex) == type(None):
+        columns = ['ano', 
+                    'movimentacao', 
+                    'ncm', 
+                    'via', 
+                    'sg_uf', 
+                    'vl_fob',
+                    'mes',
+                    'vl_quantidade']
         df_comex = pd.DataFrame.from_records(
             FComex.objects.filter(ano=ano, movimentacao=mov).values(
-                                        'ano', 
-                                        'movimentacao', 
-                                        'ncm', 
-                                        'via', 
-                                        'sg_uf', 
-                                        'vl_fob',
-                                        'mes',
-                                        'vl_quantidade'))
+                                        *columns))
 
-        
+        if len(df_comex) == 0:
+            df_comex = pd.DataFrame(columns=columns)
+
         cache.set(p_comex, df_comex)
 
     #print('---------------CACHED-------------', df_comex)
     p = f'{ano}-{mov}-{prd}'
     filtered_df = cache.get(p)
     #print('---------------CACHED-------------', filtered_df)
-
-    
 
     if type(filtered_df) == type(None):
         
@@ -134,6 +135,7 @@ def query_cache(ano, mov, prd):
             filtered_df = df_comex[(df_comex.ano == ano) & \
                 (df_comex.movimentacao == mov) & \
                     (df_comex.cod_ncm == prd)]
+
         cache.set(p, filtered_df, 200)
     
     return filtered_df
@@ -155,6 +157,9 @@ def update_figure(ano, mov, prd):
         'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
     
     tick_vals = [1,2,3,4,5,6,7,8,9,10,11,12]
+
+    if len(qnt_df) == 0:
+        qnt_df = pd.DataFrame(columns=['mes', 'vl_quantidade'])
 
     fig = px.bar(qnt_df, x=qnt_df.index, y="vl_quantidade", barmode="group")
 
@@ -199,12 +204,15 @@ def update_table(ano, mov, prd):
 
     filtered_df = query_cache(ano, mov, prd)
 
+    if len(filtered_df):
     
-    qnt_df = filtered_df[['sg_uf', 'vl_fob']].groupby(['sg_uf'], as_index=False).sum().sort_values('vl_fob', ascending=False)
-    qnt_df['PART'] = (qnt_df['vl_fob']/qnt_df['vl_fob'].sum())
+        qnt_df = filtered_df[['sg_uf', 'vl_fob']].groupby(['sg_uf'], as_index=False).sum()
+        qnt_df['PART'] = (qnt_df['vl_fob']/qnt_df['vl_fob'].sum())
 
-    return qnt_df.to_dict('records')
+        return qnt_df.to_dict('records')
 
+    else:
+        return pd.DataFrame(columns=['sg_uf', 'vl_fob', 'PART']).to_dict('records')
 
 @app.callback(
     Output('qnt-title', 'children'),
