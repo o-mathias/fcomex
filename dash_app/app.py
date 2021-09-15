@@ -23,11 +23,11 @@ df = pd.DataFrame({
 '''
 anos = pd.DataFrame.from_records(FComex.objects.all().values('ano'))
 
-print('ANOOOS:', anos)
+#print('ANOOOS:', anos)
 df_ncm = pd.DataFrame.from_records(NCM.objects.all().values())
 df_via = pd.DataFrame.from_records(VIA.objects.all().values())
 
-print(df_ncm)
+#print(df_ncm)
 
 ano = [{'label':ano, 'value':ano} for ano in anos['ano'].unique()]
 prd = [{'label':prd['no_ncm_por'], 'value':prd['id_ncm']} for idx,prd in df_ncm.iterrows()]
@@ -118,10 +118,10 @@ def query_cache(ano, mov, prd):
         
         cache.set(p_comex, df_comex)
 
-    print('---------------CACHED-------------', df_comex)
+    #print('---------------CACHED-------------', df_comex)
     p = f'{ano}-{mov}-{prd}'
     filtered_df = cache.get(p)
-    print('---------------CACHED-------------', filtered_df)
+    #print('---------------CACHED-------------', filtered_df)
 
     
 
@@ -149,7 +149,7 @@ def update_figure(ano, mov, prd):
     filtered_df = query_cache(ano, mov, prd)
 
     qnt_df = filtered_df[['mes', 'vl_quantidade']].groupby(['mes']).sum().sort_values('mes')
-    print('qnt', qnt_df)
+    #print('qnt', qnt_df)
 
     ticks = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', \
         'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
@@ -175,7 +175,7 @@ def update_figure(ano, mov, prd):
     Input('drop-mov', 'value'),
     Input('drop-prd', 'value'))
 def update_figure(ano, mov, prd):
-    print(ano, mov, prd)
+    #print(ano, mov, prd)
     filtered_df = query_cache(ano, mov, prd)
 
     qnt_df = filtered_df['via'].value_counts().sort_index()
