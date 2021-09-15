@@ -21,24 +21,15 @@ df = pd.DataFrame({
     "City": ["SF", "SF", "SF", "Montreal", "Montreal", "Montreal"]
 })
 '''
+anos = pd.DataFrame.from_records(FComex.objects.all().values('ano'))
 
-df_comex = pd.DataFrame.from_records(FComex.objects.all().values('ano', 
-                                                                'movimentacao', 
-                                                                'ncm', 
-                                                                'via', 
-                                                                'sg_uf', 
-                                                                'vl_fob',
-                                                                'mes',
-                                                                'vl_quantidade'))
-#df_comex = pd.read_csv('../dados/f_comex.csv', header=0, delimiter=';')
+print('ANOOOS:', anos)
 df_ncm = pd.DataFrame.from_records(NCM.objects.all().values())
-#df_ncm = pd.read_csv('../dados/d_sh2.csv', header=0, delimiter='\t')
 df_via = pd.DataFrame.from_records(VIA.objects.all().values())
-#df_via = pd.read_csv('../dados/d_via.csv', header=0, delimiter='\t')
 
 print(df_ncm)
 
-ano = [{'label':ano, 'value':ano} for ano in df_comex['ano'].unique()]
+ano = [{'label':ano, 'value':ano} for ano in anos['ano'].unique()]
 prd = [{'label':prd['no_ncm_por'], 'value':prd['id_ncm']} for idx,prd in df_ncm.iterrows()]
 prd.append({'label':'Todos', 'value':'Todos'})
 
@@ -108,14 +99,34 @@ app.layout = html.Div(children=[
 
 
 def query_cache(ano, mov, prd):
-    p = f'{ano}-{mov}-{prd}'
-    df = cache.get(p)
-    print('---------------CACHED-------------', df)
 
-    if type(df) != type(None):
+    p_comex = f'comex-{ano}-{mov}'
+    df_comex = cache.get(p_comex)
+
+    if type(df_comex) == type(None):
+        df_comex = pd.DataFrame.from_records(
+            FComex.objects.filter(ano=ano, movimentacao=mov).values(
+                                        'ano', 
+                                        'movimentacao', 
+                                        'ncm', 
+                                        'via', 
+                                        'sg_uf', 
+                                        'vl_fob',
+                                        'mes',
+                                        'vl_quantidade'))
+
         
-        return df
-    else:
+        cache.set(p_comex, df_comex)
+
+    print('---------------CACHED-------------', df_comex)
+    p = f'{ano}-{mov}-{prd}'
+    filtered_df = cache.get(p)
+    print('---------------CACHED-------------', filtered_df)
+
+    
+
+    if type(filtered_df) == type(None):
+        
         if prd == 'Todos':
             filtered_df = df_comex[(df_comex.ano == ano) & \
                 (df_comex.movimentacao == mov)]
@@ -124,7 +135,9 @@ def query_cache(ano, mov, prd):
                 (df_comex.movimentacao == mov) & \
                     (df_comex.cod_ncm == prd)]
         cache.set(p, filtered_df, 200)
-        return filtered_df
+    
+    return filtered_df
+
 
 
 @app.callback(
