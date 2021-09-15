@@ -11,6 +11,8 @@ from app.models import FComex, NCM, VIA
 
 from django_plotly_dash import DjangoDash
 
+from django.core.cache import cache
+
 app = DjangoDash('dash_app_id', external_stylesheets=[dbc.themes.BOOTSTRAP])
 '''
 df = pd.DataFrame({
@@ -104,20 +106,34 @@ app.layout = html.Div(children=[
 
 ])
 
+
+def query_cache(ano, mov, prd):
+    p = f'{ano}-{mov}-{prd}'
+    df = cache.get(p)
+    print('---------------CACHED-------------', df)
+
+    if type(df) != type(None):
+        
+        return df
+    else:
+        if prd == 'Todos':
+            filtered_df = df_comex[(df_comex.ano == ano) & \
+                (df_comex.movimentacao == mov)]
+        else:
+            filtered_df = df_comex[(df_comex.ano == ano) & \
+                (df_comex.movimentacao == mov) & \
+                    (df_comex.cod_ncm == prd)]
+        cache.set(p, filtered_df, 200)
+        return filtered_df
+
+
 @app.callback(
     Output('qnt-graph', 'figure'),
     Input('drop-ano', 'value'),
     Input('drop-mov', 'value'),
     Input('drop-prd', 'value'))
 def update_figure(ano, mov, prd):
-    print(ano, mov, prd)
-    if prd == 'Todos':
-        filtered_df = df_comex[(df_comex.ano == ano) & \
-            (df_comex.movimentacao == mov)]
-    else:
-        filtered_df = df_comex[(df_comex.ano == ano) & \
-            (df_comex.movimentacao == mov) & \
-                (df_comex.cod_ncm == prd)]
+    filtered_df = query_cache(ano, mov, prd)
 
     qnt_df = filtered_df[['mes', 'vl_quantidade']].groupby(['mes']).sum().sort_values('mes')
     print('qnt', qnt_df)
@@ -136,6 +152,8 @@ def update_figure(ano, mov, prd):
                             ticktext = ticks
                         ))
 
+    cache.set('filtered_df', filtered_df)
+
     return fig
 
 @app.callback(
@@ -145,13 +163,7 @@ def update_figure(ano, mov, prd):
     Input('drop-prd', 'value'))
 def update_figure(ano, mov, prd):
     print(ano, mov, prd)
-    if prd == 'Todos':
-        filtered_df = df_comex[(df_comex.ano == ano) & \
-            (df_comex.movimentacao == mov)]
-    else:
-        filtered_df = df_comex[(df_comex.ano == ano) & \
-            (df_comex.movimentacao == mov) & \
-                (df_comex.cod_ncm == prd)]
+    filtered_df = query_cache(ano, mov, prd)
 
     qnt_df = filtered_df['via'].value_counts().sort_index()
 
@@ -172,14 +184,7 @@ def update_figure(ano, mov, prd):
     Input('drop-prd', 'value'))
 def update_table(ano, mov, prd):
 
-    print(ano, mov, prd)
-    if prd == 'Todos':
-        filtered_df = df_comex[(df_comex.ano == ano) & \
-            (df_comex.movimentacao == mov)]
-    else:
-        filtered_df = df_comex[(df_comex.ano == ano) & \
-            (df_comex.movimentacao == mov) & \
-                (df_comex.cod_ncm == prd)]
+    filtered_df = query_cache(ano, mov, prd)
 
     
     qnt_df = filtered_df[['sg_uf', 'vl_fob']].groupby(['sg_uf'], as_index=False).sum().sort_values('vl_fob', ascending=False)
@@ -234,13 +239,7 @@ def update_title_table(ano, mov, prd):
     Input('drop-prd', 'value'))
 def update_card(ano, mov, prd):
 
-    if prd == 'Todos':
-        filtered_df = df_comex[(df_comex.ano == ano) & \
-            (df_comex.movimentacao == mov)]
-    else:
-        filtered_df = df_comex[(df_comex.ano == ano) & \
-            (df_comex.movimentacao == mov) & \
-                (df_comex.cod_ncm == prd)]
+    filtered_df = query_cache(ano, mov, prd)
 
     qnt_df = filtered_df['vl_quantidade'].sum()
     total = '{0:,} unidades'.format(qnt_df).replace(',','.')
