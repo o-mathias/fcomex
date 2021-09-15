@@ -134,7 +134,7 @@ def query_cache(ano, mov, prd):
         else:
             filtered_df = df_comex[(df_comex.ano == ano) & \
                 (df_comex.movimentacao == mov) & \
-                    (df_comex.cod_ncm == prd)]
+                    (df_comex.ncm == prd)]
 
         cache.set(p, filtered_df, 200)
     
