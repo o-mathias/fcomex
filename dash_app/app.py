@@ -23,11 +23,11 @@ df = pd.DataFrame({
 '''
 anos = pd.DataFrame.from_records(FComex.objects.all().values('ano'))
 
-#print('ANOOOS:', anos)
+
 df_ncm = pd.DataFrame.from_records(NCM.objects.all().values())
 df_via = pd.DataFrame.from_records(VIA.objects.all().values())
 
-#print(df_ncm)
+
 
 ano = [{'label':ano, 'value':ano} for ano in anos['ano'].unique()]
 prd = [{'label':prd['no_ncm_por'], 'value':prd['id_ncm']} for idx,prd in df_ncm.iterrows()]
@@ -36,19 +36,21 @@ prd.append({'label':'Todos', 'value':'Todos'})
 
 
 app.layout = html.Div(children=[
-    html.H1(children='Hello Dash'),
+    html.H1(children='Exportação e Importação Geral'),
 
     html.Div(children='''
-        Dash: A web application framework for your data.
+        Dados de importação e exportação de produtos do território brasileiro obtidos da plataforma comexstat (comexstat.mdic.gov.br).
     '''),
 
     html.H4(children='Filtros'),
+    html.H6(children='Ano:'),
     dcc.Dropdown(
         id='drop-ano',
         options=ano,
         value=2020
     ),
     html.Br(),
+    html.H6(children='Movimentação:'),
     dcc.Dropdown(
         id='drop-mov',
         options=[
@@ -58,6 +60,7 @@ app.layout = html.Div(children=[
         value='Importação'
     ),
     html.Br(),
+    html.H6(children='Produto:'),
     dcc.Dropdown(
         id='drop-prd',
         options=prd,
@@ -93,7 +96,6 @@ app.layout = html.Div(children=[
         },
     ),
 
-    #html.Table(id='fob-table'),
 
 ])
 
@@ -121,10 +123,8 @@ def query_cache(ano, mov, prd):
 
         cache.set(p_comex, df_comex)
 
-    #print('---------------CACHED-------------', df_comex)
     p = f'{ano}-{mov}-{prd}'
     filtered_df = cache.get(p)
-    #print('---------------CACHED-------------', filtered_df)
 
     if type(filtered_df) == type(None):
         
@@ -151,7 +151,6 @@ def update_figure(ano, mov, prd):
     filtered_df = query_cache(ano, mov, prd)
 
     qnt_df = filtered_df[['mes', 'vl_quantidade']].groupby(['mes']).sum().sort_values('mes')
-    #print('qnt', qnt_df)
 
     ticks = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', \
         'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
@@ -180,7 +179,7 @@ def update_figure(ano, mov, prd):
     Input('drop-mov', 'value'),
     Input('drop-prd', 'value'))
 def update_figure(ano, mov, prd):
-    #print(ano, mov, prd)
+
     filtered_df = query_cache(ano, mov, prd)
 
     qnt_df = filtered_df['via'].value_counts().sort_index()
@@ -195,7 +194,6 @@ def update_figure(ano, mov, prd):
     return fig
 
 @app.callback(
-    #*table_callbacks_out,
     Output('table', 'data'),
     Input('drop-ano', 'value'),
     Input('drop-mov', 'value'),
