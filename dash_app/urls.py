@@ -9,11 +9,9 @@ from django.conf.urls.static import static
 
 from django_plotly_dash.views import add_to_session
 
-from . import app
-
 from .views import dash_view
 
 urlpatterns = [
-    path('dash', TemplateView.as_view(template_name='dash.html'), name="dash"),
+    path('dash', dash_view, name="dash"),
     path('django_plotly_dash/', include('django_plotly_dash.urls')),
 ]
